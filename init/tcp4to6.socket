@@ -1,0 +1,10 @@
+[Socket]
+# tcp4to6 shall listen on tcp4 127.0.0.1:8080.
+ListenStream=127.0.0.1:8080
+# If FreeBind is set to false the units fails when the address is not present at its launch. In case you want to start
+# tcp4to6 at boot and would like to make this more robust in case the address gets assigned late to your network
+# interface, leave that at true.
+FreeBind=true
+
+[Install]
+WantedBy=sockets.target

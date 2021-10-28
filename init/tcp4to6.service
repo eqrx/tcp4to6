@@ -1,0 +1,48 @@
+[Unit]
+# Attach this unit to our socket unit so it can be started directly. Elsewise you would need to start the socket unit
+# instead of this one and tcp4to6 would only be launched on demand (would also be useful).
+Requires=tcp4to6-matrix.socket
+After=tcp4to6-matrix.socket
+
+[Service]
+Type=simple
+# Change this if your binary is elewhere.
+ExecStart=/usr/local/bin/tcp4to6
+# No persistent user needed.
+DynamicUser=true
+
+# Tell tcp4to6 to which tcp6 address it should dial when a client comes in.
+# In this example [::1]:8080.
+Environment=TCPV4TO6_DESTINATION_ADDR=[::1]:8080
+
+# Lock down tcp4to6 as hard as possible
+CapabilityBoundingSet=
+LockPersonality=true
+MemoryDenyWriteExecute=true
+MountFlags=private
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+PrivateUsers=true
+ProcSubset=pid
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectProc=invisible
+ProtectSystem=strict
+RemoveIPC=true
+RestrictAddressFamilies=AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+SecureBits=noroot-locked
+SystemCallArchitectures=native
+SystemCallFilter=@signal @process @ipc @basic-io @network-io @io-event @file-system splice
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
