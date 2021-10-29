@@ -75,12 +75,16 @@ func Run(ctx context.Context, log logr.Logger) error {
 		return nil
 	})
 
-	if err := group.Wait(); len(err) != 0 {
+	errs := group.Wait()
+	switch len(errs) {
+	case 0:
+		return nil
+	case 1:
+		return errs[0]
+	default:
 		//nolint: goerr113 // Slice of errors, no wrapping possible or useful.
-		return fmt.Errorf("listening group failed: %v", err)
+		return fmt.Errorf("listening group failed: %v", errs)
 	}
-
-	return nil
 }
 
 // handleListener accepts from the given listener until it is closed. Closing the listener causes the method to return
