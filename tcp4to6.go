@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
 
@@ -58,8 +59,6 @@ func Run(ctx context.Context, log logr.Logger) error {
 	}
 
 	listener := listeners[0]
-
-	log = log.WithValues("laddr", listener.Addr())
 
 	group := rungroup.New(ctx)
 
@@ -103,31 +102,69 @@ func handleListener(group *rungroup.Group, log logr.Logger, toAddr string, l net
 			return fmt.Errorf("failed to accept new connection: %w", err)
 		}
 
-		log := log.WithValues("from", from.RemoteAddr(), "to", toAddr)
+		group.Go(func(ctx context.Context) error {
+			handleConn(ctx, log, from, toAddr)
 
-		group.Go(func(ctx context.Context) error { return handleConn(ctx, log, from, toAddr) }, rungroup.NoCancelOnSuccess)
+			return nil
+		}, rungroup.NoCancelOnSuccess)
 	}
 }
 
 // handleConn tries to dial a tcp6 to the net.Dial compatible address toAddr once. If this succeeds, the given net.Conn
 // from read and write channels get bridged to the write and read channels of the dialed connection respectively.
-// If dial fails the method return with a nil error (it is a transparent connection forwarder).
-// from gets closed in any case.
-func handleConn(ctx context.Context, log logr.Logger, from net.Conn, dstAddr string) error {
+// Errors are logged using the logger log.
+func handleConn(ctx context.Context, log logr.Logger, from net.Conn, dstAddr string) {
 	to, err := (&net.Dialer{}).DialContext(ctx, "tcp6", dstAddr)
 	if err != nil {
-		log.Error(err, "couldn't connect to dstAddr. closing accepted connection", "dst", dstAddr, "from", from.RemoteAddr())
+		log.Error(err, "couldn't connect to dstAddr. closing accepted connection")
 
 		if err := from.Close(); err != nil {
-			return fmt.Errorf("could not close connection from %s after dialing to dstAddr failed: %w", from.RemoteAddr(), err)
+			log.Error(err, "couldn't close accepted connection")
+		}
+	} else {
+		bridgeStreams(ctx, log, to, from)
+	}
+}
+
+// bridgeStreams copies all data between the streams to and from until an operations returns an error. This error is
+// then logged and both interfaces are closed.
+func bridgeStreams(ctx context.Context, log logr.Logger, to, from io.ReadWriteCloser) {
+	group := rungroup.New(ctx)
+
+	group.Go(func(context.Context) error {
+		if _, err := io.Copy(to, from); err != nil && !errors.Is(err, net.ErrClosed) {
+			log.Error(err, "copy from->to failed")
 		}
 
 		return nil
-	}
+	})
+	group.Go(func(context.Context) error {
+		if _, err := io.Copy(from, to); err != nil && !errors.Is(err, net.ErrClosed) {
+			log.Error(err, "copy from<-to failed")
+		}
 
-	if err := BridgeStreams(ctx, to, from); err != nil {
-		return fmt.Errorf("bridging between %v and %v failed: %w", from.RemoteAddr(), to.RemoteAddr(), err)
-	}
+		return nil
+	})
+	group.Go(func(ctx context.Context) error {
+		<-ctx.Done()
 
-	return nil
+		if err := to.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+			log.Error(err, "could not close from stream")
+		}
+
+		return nil
+	})
+	group.Go(func(ctx context.Context) error {
+		<-ctx.Done()
+
+		if err := from.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+			log.Error(err, "could not close to stream")
+		}
+
+		return nil
+	})
+
+	if errs := group.Wait(); len(errs) != 0 {
+		panic("did not expect errors")
+	}
 }
