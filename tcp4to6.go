@@ -74,16 +74,11 @@ func Run(ctx context.Context, log logr.Logger) error {
 		return nil
 	})
 
-	errs := group.Wait()
-	switch len(errs) {
-	case 0:
-		return nil
-	case 1:
-		return errs[0]
-	default:
-		//nolint: goerr113 // Slice of errors, no wrapping possible or useful.
-		return fmt.Errorf("listening group failed: %v", errs)
+	if err := group.Wait(); err != nil {
+		return fmt.Errorf("listening group failed: %w", err)
 	}
+
+	return nil
 }
 
 // handleListener accepts from the given listener until it is closed. Closing the listener causes the method to return
@@ -164,7 +159,7 @@ func bridgeStreams(ctx context.Context, log logr.Logger, to, from io.ReadWriteCl
 		return nil
 	})
 
-	if errs := group.Wait(); len(errs) != 0 {
+	if err := group.Wait(); err != nil {
 		panic("did not expect errors")
 	}
 }
