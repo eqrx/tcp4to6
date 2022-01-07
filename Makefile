@@ -6,15 +6,15 @@ export CGO_ENABLED=0
 all: dist
 
 .PHONY: dist
-dist: dist/amd64/tcp4to6 dist/arm64/tcp4to6
+dist: dist/amd64/tcpto6 dist/arm64/tcpto6
 
-.PHONY: dist/amd64/tcp4to6
+.PHONY: dist/amd64/tcpto6
 dist/amd64/tcp4to6:
-	GOARCH=amd64 go build -ldflags "$(GOLDFLAGS)" -o $@ ./cmd/tcp4to6
+	GOARCH=amd64 go build -ldflags "$(GOLDFLAGS)" -o $@ ./cmd/tcpto6
 
-.PHONY: dist/arm64/tcp4to6
+.PHONY: dist/arm64/tcpto6
 dist/arm64/tcp4to6:
-	GOARCH=arm64 go build -ldflags "$(GOLDFLAGS)" -o $@ ./cmd/tcp4to6
+	GOARCH=arm64 go build -ldflags "$(GOLDFLAGS)" -o $@ ./cmd/tcpto6
 
 .PHONY: benchmark
 benchmark:

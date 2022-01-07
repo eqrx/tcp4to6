@@ -20,7 +20,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/eqrx/tcp4to6"
+	"dev.eqrx.net/tcpto6"
 	"github.com/go-logr/stdr"
 	"golang.org/x/sys/unix"
 )
@@ -42,5 +42,5 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), unix.SIGTERM, unix.SIGINT)
 	defer cancel()
 
-	err = tcp4to6.Run(ctx, log)
+	err = tcpto6.Run(ctx, log)
 }

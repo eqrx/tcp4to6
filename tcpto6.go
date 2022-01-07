@@ -11,9 +11,9 @@
 // You should have received a copy of the GNU Affero General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-// Package tcp4to6 provides an program that takes a net.Listener from systemd and accepts connections from it.
+// Package tcpto6 provides an program that takes a net.Listener from systemd and accepts connections from it.
 // For each accepted connection it dials to a predefined tcp6 address and bridges the connection if the dial succeeds.
-package tcp4to6
+package tcpto6
 
 import (
 	"context"
@@ -23,8 +23,8 @@ import (
 	"net"
 	"os"
 
+	"dev.eqrx.net/rungroup"
 	"github.com/coreos/go-systemd/v22/activation"
-	"github.com/eqrx/rungroup"
 	"github.com/go-logr/logr"
 )
 

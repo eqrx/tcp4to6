@@ -1,4 +1,4 @@
-[![Go Reference](https://pkg.go.dev/badge/github.com/eqrx/tcp4to6.svg)](https://pkg.go.dev/github.com/eqrx/tcp4to6)
+[![Go Reference](https://pkg.go.dev/badge/dev.eqrx.net/tcpto6.svg)](https://pkg.go.dev/dev.eqrx.net/tcpto6)
 # tcp4to6
 
 Listen on a tcp4 address passed by systemd and forward connections to a specified tcp6 address. Except for the systemd
