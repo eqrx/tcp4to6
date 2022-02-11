@@ -51,7 +51,7 @@ func Run(ctx context.Context, log logr.Logger) error {
 
 	listeners, err := activation.Listeners()
 	if err != nil {
-		return fmt.Errorf("could not get systemd sockets: %w", err)
+		return fmt.Errorf("systemd sockets: %w", err)
 	}
 
 	if len(listeners) != 1 {
@@ -68,14 +68,14 @@ func Run(ctx context.Context, log logr.Logger) error {
 	group.Go(func(ctx context.Context) error {
 		<-ctx.Done()
 		if err := listener.Close(); err != nil {
-			return fmt.Errorf("could not close listener: %w", err)
+			return fmt.Errorf("close listener: %w", err)
 		}
 
 		return nil
 	})
 
 	if err := group.Wait(); err != nil {
-		return fmt.Errorf("listening group failed: %w", err)
+		return fmt.Errorf("listening group: %w", err)
 	}
 
 	return nil
@@ -94,7 +94,7 @@ func handleListener(group *rungroup.Group, log logr.Logger, toAddr string, l net
 		case errors.Is(err, net.ErrClosed):
 			return nil
 		default:
-			return fmt.Errorf("failed to accept new connection: %w", err)
+			return fmt.Errorf("accept new connection: %w", err)
 		}
 
 		group.Go(func(ctx context.Context) error {
