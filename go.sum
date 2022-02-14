@@ -1,5 +1,5 @@
-dev.eqrx.net/rungroup v0.0.4 h1:htIRQ88ATo5rLm/tJKnw8LQtPy8qwZiC2M/XCifkFlM=
-dev.eqrx.net/rungroup v0.0.4/go.mod h1:JU/vm7/3v2ehd6UvZPo3O1/rX5hG2f41pWhFAXHSkis=
+dev.eqrx.net/rungroup v0.0.5 h1:fOutPdnEdyCdsZTbD6vcM8KVQCCZPcVAvdYOBHnMrJ0=
+dev.eqrx.net/rungroup v0.0.5/go.mod h1:JU/vm7/3v2ehd6UvZPo3O1/rX5hG2f41pWhFAXHSkis=
 github.com/coreos/go-systemd/v22 v22.3.2 h1:D9/bQk5vlXQFZ6Kwuu6zaiXJ9oTPe68++AzAJc1DzSI=
 github.com/coreos/go-systemd/v22 v22.3.2/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/go-logr/logr v1.2.2 h1:ahHml/yUpnlb96Rp8HCvtYVPY8ZYpxq3g7UYchIYwbs=
