@@ -106,35 +106,35 @@ func handleListener(group *rungroup.Group, log logr.Logger, toAddr string, l net
 }
 
 // handleConn tries to dial a tcp6 to the net.Dial compatible address toAddr once. If this succeeds, the given net.Conn
-// from read and write channels get bridged to the write and read channels of the dialed connection respectively.
+// src read and write channels get bridged to the write and read channels of the dialed connection respectively.
 // Errors are logged using the logger log.
-func handleConn(ctx context.Context, log logr.Logger, from net.Conn, dstAddr string) {
-	to, err := (&net.Dialer{}).DialContext(ctx, "tcp6", dstAddr)
+func handleConn(ctx context.Context, log logr.Logger, src net.Conn, dstAddr string) {
+	dst, err := (&net.Dialer{}).DialContext(ctx, "tcp6", dstAddr)
 	if err != nil {
 		log.Error(err, "couldn't connect to dstAddr. closing accepted connection")
 
-		if err := from.Close(); err != nil {
+		if err := src.Close(); err != nil {
 			log.Error(err, "couldn't close accepted connection")
 		}
 	} else {
-		bridgeStreams(ctx, log, to, from)
+		bridgeStreams(ctx, log, dst, src)
 	}
 }
 
 // bridgeStreams copies all data between the streams to and from until an operations returns an error. This error is
 // then logged and both interfaces are closed.
-func bridgeStreams(ctx context.Context, log logr.Logger, to, from io.ReadWriteCloser) {
+func bridgeStreams(ctx context.Context, log logr.Logger, dst, src io.ReadWriteCloser) {
 	group := rungroup.New(ctx)
 
 	group.Go(func(context.Context) error {
-		if _, err := io.Copy(to, from); err != nil && !errors.Is(err, net.ErrClosed) {
+		if _, err := io.Copy(dst, src); err != nil && !errors.Is(err, net.ErrClosed) {
 			log.Error(err, "copy from->to failed")
 		}
 
 		return nil
 	})
 	group.Go(func(context.Context) error {
-		if _, err := io.Copy(from, to); err != nil && !errors.Is(err, net.ErrClosed) {
+		if _, err := io.Copy(src, dst); err != nil && !errors.Is(err, net.ErrClosed) {
 			log.Error(err, "copy from<-to failed")
 		}
 
@@ -143,7 +143,7 @@ func bridgeStreams(ctx context.Context, log logr.Logger, to, from io.ReadWriteCl
 	group.Go(func(ctx context.Context) error {
 		<-ctx.Done()
 
-		if err := to.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+		if err := dst.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
 			log.Error(err, "could not close from stream")
 		}
 
@@ -152,7 +152,7 @@ func bridgeStreams(ctx context.Context, log logr.Logger, to, from io.ReadWriteCl
 	group.Go(func(ctx context.Context) error {
 		<-ctx.Done()
 
-		if err := from.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+		if err := src.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
 			log.Error(err, "could not close to stream")
 		}
 
