@@ -7,15 +7,12 @@ After=tcp4to6-matrix.socket
 [Service]
 Type=simple
 # Change this if your binary is elewhere.
-ExecStart=/usr/local/bin/tcp4to6
+ExecStart=/usr/bin/tcp4to6
 # No persistent user needed.
 DynamicUser=true
-
-# Tell tcp4to6 to which tcp6 address it should dial when a client comes in.
-# In this example [::1]:8080.
-Environment=TCPV4TO6_DESTINATION_ADDR=[::1]:8080
-
-# Lock down tcp4to6 as hard as possible
+# Configuring env variables come from this file.
+EnvironmentFile=/etc/tcpto6/%i.conf
+# Lock down tcp4to6 as hard as possible.
 CapabilityBoundingSet=
 LockPersonality=true
 MemoryDenyWriteExecute=true

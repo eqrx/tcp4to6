@@ -30,7 +30,7 @@ import (
 
 // ToAddrEnvName is the name of the environment variable that contains the address that should be dialed for accepted
 // connections. Must be in a format that net.Dial understands.
-const ToAddrEnvName = "TCPV4TO6_DESTINATION_ADDR"
+const ToAddrEnvName = "TCPTO6_DESTINATION_ADDR"
 
 var (
 	// errEnvMissing is internally raised if an env var is missing.
